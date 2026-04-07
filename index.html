@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Генератор надёжных паролей</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e9f0fc 0%, #d9e2f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        /* главная карточка */
+        .card {
+            max-width: 680px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(0px);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        /* шапка */
+        .header {
+            background: #1e2b3c;
+            padding: 1.8rem 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header h1 span {
+            font-size: 2rem;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            opacity: 0.8;
+            margin-top: 6px;
+        }
+
+        /* тело */
+        .content {
+            padding: 2rem 2rem 2rem 2rem;
+        }
+
+        /* поле с паролем */
+        .password-area {
+            background: #f3f6fc;
+            border-radius: 1.8rem;
+            padding: 0.2rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 1px 2px #00000008, 0 2px 4px #00000005;
+        }
+
+        .password-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border-radius: 1.6rem;
+            padding: 0.3rem 0.3rem 0.3rem 1.5rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        #passwordOutput {
+            flex: 1;
+            font-size: 1.5rem;
+            font-weight: 500;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            letter-spacing: 0.5px;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 0.9rem 0;
+            color: #0a1c2a;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: #1e2b3c;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.7rem 1.2rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .copy-btn:hover {
+            background: #0f1e2c;
+            transform: scale(0.97);
+        }
+
+        .copy-btn:active {
+            background: #09141f;
+        }
+
+        /* настройки */
+        .settings {
+            background: #ffffffea;
+            border-radius: 1.8rem;
+            padding: 0.2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .setting-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 0.9rem 0.2rem;
+            border-bottom: 1px solid #eef2f8;
+        }
+
+        .setting-group:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: 550;
+            color: #1f3b4c;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .label span {
+            font-size: 1.2rem;
+        }
+
+        /* чекбоксы стилизованные */
+        .checkbox-group {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            cursor: pointer;
+            background: #f0f4fa;
+            padding: 0.35rem 0.9rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e3a4d;
+            transition: 0.1s;
+        }
+
+        .checkbox-label input {
+            width: 1.1rem;
+            height: 1.1rem;
+            cursor: pointer;
+            accent-color: #2c5a74;
+        }
+
+        /* слайдер длины */
+        .length-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        #lengthSlider {
+            flex: 2;
+            min-width: 160px;
+            height: 5px;
+            border-radius: 10px;
+            background: #cddfec;
+            -webkit-appearance: none;
+        }
+
+        #lengthSlider:focus {
+            outline: none;
+        }
+
+        #lengthSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #1e2b3c;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+            border: none;
+        }
+
+        #lengthValue {
+            background: #eef2f8;
+            padding: 0.3rem 0.9rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            min-width: 60px;
+            text-align: center;
+            font-family: monospace;
+            color: #0f2c3b;
+        }
+
+        /* кнопка генерации */
+        .generate-btn {
+            width: 100%;
+            background: #2c5a74;
+            border: none;
+            padding: 1rem;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: white;
+            border-radius: 3rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 14px rgba(28, 65, 87, 0.3);
+            margin-top: 0.4rem;
+        }
+
+        .generate-btn:hover {
+            background: #1d455e;
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* сообщение о копировании */
+        .toast-msg {
+            visibility: hidden;
+            min-width: 180px;
+            background-color: #1e2b3cee;
+            color: #fff;
+            text-align: center;
+            border-radius: 40px;
+            padding: 8px 18px;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            transition: visibility 0.2s, opacity 0.2s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toast-msg.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* доп */
+        .strength-hint {
+            font-size: 0.75rem;
+            margin-top: 1rem;
+            text-align: center;
+            color: #4b6f86;
+            background: #eef3fa;
+            display: inline-block;
+            width: auto;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 1rem 1rem 1.4rem;
+            color: #6c8da3;
+            border-top: 1px solid #e2edf5;
+            background: #ffffffcc;
+        }
+
+        @media (max-width: 520px) {
+            .content {
+                padding: 1.5rem;
+            }
+            #passwordOutput {
+                font-size: 1.1rem;
+            }
+            .copy-btn {
+                padding: 0.5rem 1rem;
+            }
+            .checkbox-label {
+                padding: 0.25rem 0.7rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1>
+            <span>🔐</span> ПарольGen
+        </h1>
+        <p>Создавай надёжные пароли за секунду</p>
+    </div>
+
+    <div class="content">
+        <!-- поле результата -->
+        <div class="password-area">
+            <div class="password-wrapper">
+                <input type="text" id="passwordOutput" readonly placeholder="Ваш пароль появится здесь...">
+                <button class="copy-btn" id="copyBtn">📋 Копировать</button>
+            </div>
+        </div>
+
+        <!-- Блок настроек -->
+        <div class="settings">
+            <!-- Длина пароля -->
+            <div class="setting-group">
+                <div class="label"><span>🔢</span> Длина пароля</div>
+                <div class="length-control">
+                    <input type="range" id="lengthSlider" min="4" max="40" value="16" step="1">
+                    <span id="lengthValue">16</span>
+                </div>
+            </div>
+
+            <!-- Наборы символов -->
+            <div class="setting-group">
+                <div class="label"><span>⚙️</span> Включить символы</div>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="useUpper" checked> A-Z
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="useLower" checked> a-z
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="useDigits" checked> 0-9
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="useSymbols"> !@#$%^&*
+                    </label>
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="label"><span>🔄</span> Исключить похожие символы</div>
+                <label class="checkbox-label" style="background:#f0f4fa;">
+                    <input type="checkbox" id="excludeAmbiguous"> il1Lo0O
+                </label>
+            </div>
+        </div>
+
+        <button class="generate-btn" id="generateBtn">
+            🎲 Сгенерировать пароль
+        </button>
+        <div style="text-align: center; margin-top: 14px;">
+            <span class="strength-hint">💡 Надёжный пароль минимум 12 символов + смесь символов</span>
+        </div>
+    </div>
+    <footer>
+        ⚡ Простой генератор | Настрой под себя
+    </footer>
+</div>
+
+<div id="toastMsg" class="toast-msg">✓ Скопировано!</div>
+
+<script>
+    (function() {
+        // DOM элементы
+        const passwordInput = document.getElementById('passwordOutput');
+        const lengthSlider = document.getElementById('lengthSlider');
+        const lengthValue = document.getElementById('lengthValue');
+        const useUpper = document.getElementById('useUpper');
+        const useLower = document.getElementById('useLower');
+        const useDigits = document.getElementById('useDigits');
+        const useSymbols = document.getElementById('useSymbols');
+        const excludeAmbiguous = document.getElementById('excludeAmbiguous');
+        const generateBtn = document.getElementById('generateBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const toast = document.getElementById('toastMsg');
+
+        // Символьные наборы
+        const upperSet = 'ABCDEFGHJKLMNPQRSTUVWXYZ';      // исключили O (похож на 0) но управляется опцией отдельно, сделаем базу, а фильтр потом
+        const lowerSet = 'abcdefghijkmnopqrstuvwxyz';      // исключили l (маленькая L)
+        const digitSet = '23456789';                       // исключили 0,1 (похожи)
+        const symbolSet = '!@#$%^&*()_+[]{}<>?/\\|';
+        
+        // Полные стандартные наборы (используются если опция "исключить похожие" выключена)
+        const fullUpper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const fullLower = 'abcdefghijklmnopqrstuvwxyz';
+        const fullDigits = '0123456789';
+        const fullSymbols = '!@#$%^&*()_+[]{}<>?/\\|';
+        
+        // Амбигуозные символы (похожие) — будем удалять из активных наборов, когда опция включена
+        const ambiguousChars = new Set(['i', 'l', '1', 'L', 'o', 'O', '0']);
+        
+        // Функция получения текущего пула символов на основе чекбоксов и опции исключения
+        function getCharacterPool() {
+            let pool = '';
+            
+            // определяем, какие наборы используем (базовые или полные в зависимости от excludeAmbiguous)
+            const exclude = excludeAmbiguous.checked;
+            
+            if (useUpper.checked) {
+                let chars = exclude ? upperSet : fullUpper;
+                pool += chars;
+            }
+            if (useLower.checked) {
+                let chars = exclude ? lowerSet : fullLower;
+                pool += chars;
+            }
+            if (useDigits.checked) {
+                let chars = exclude ? digitSet : fullDigits;
+                pool += chars;
+            }
+            if (useSymbols.checked) {
+                pool += fullSymbols;   // в символах редко бывают визуально похожие, оставляем полный набор всегда для простоты
+            }
+            
+            // Дополнительная чистка: если исключение включено, проходим по pool и удаляем любые символы из ambiguousChars
+            // Это страховка, т.к. в upperSet и тд уже исключены основные, но мало ли, если разработчик изменит, а также fullUpper/fullLower
+            if (exclude) {
+                let filtered = '';
+                for (let ch of pool) {
+                    if (!ambiguousChars.has(ch)) {
+                        filtered += ch;
+                    }
+                }
+                pool = filtered;
+            }
+            
+            return pool;
+        }
+        
+        // Генерация пароля с гарантией хотя бы одного символа из каждого выбранного типа (если выбрано несколько)
+        function generatePassword(length, pool, activeFlags) {
+            if (!pool || pool.length === 0) {
+                return '⚠️ Ошибка: выберите тип символов';
+            }
+            
+            // Если выбран только один тип, просто случайные символы из пула
+            const selectedCategories = [];
+            if (useUpper.checked) selectedCategories.push('upper');
+            if (useLower.checked) selectedCategories.push('lower');
+            if (useDigits.checked) selectedCategories.push('digit');
+            if (useSymbols.checked) selectedCategories.push('symbol');
+            
+            // Если нет ни одной категории - ошибка (хотя кнопки не дадут, но на всякий)
+            if (selectedCategories.length === 0) {
+                return '❗ Выберите хотя бы один тип';
+            }
+            
+            // Функция для получения символа из конкретной категории (с учётом исключения похожих)
+            function getCharFromCategory(category) {
+                const exclude = excludeAmbiguous.checked;
+                let str = '';
+                if (category === 'upper') str = exclude ? upperSet : fullUpper;
+                if (category === 'lower') str = exclude ? lowerSet : fullLower;
+                if (category === 'digit') str = exclude ? digitSet : fullDigits;
+                if (category === 'symbol') str = fullSymbols;
+                
+                // дополнительная фильтрация на амбигуозные символы
+                if (exclude && (category === 'upper' || category === 'lower' || category === 'digit')) {
+                    let filtered = '';
+                    for (let c of str) {
+                        if (!ambiguousChars.has(c)) filtered += c;
+                    }
+                    str = filtered;
+                }
+                if (str.length === 0) return null;
+                const randomIndex = Math.floor(Math.random() * str.length);
+                return str[randomIndex];
+            }
+            
+            let passwordArray = [];
+            
+            // 1) Добавляем по одному обязательному символу от каждой выбранной категории
+            for (let cat of selectedCategories) {
+                let ch = getCharFromCategory(cat);
+                if (ch) passwordArray.push(ch);
+                else {
+                    // fallback: если вдруг пустая категория (например символы отключены), игнорируем
+                }
+            }
+            
+            // Если после обязательного добавления длина больше запрашиваемой — обрезаем (но маловероятно для длины >= кол-ва категорий)
+            // Добиваем остальные символы из общего пула
+            const remainingLength = length - passwordArray.length;
+            if (remainingLength > 0 && pool.length > 0) {
+                for (let i = 0; i < remainingLength; i++) {
+                    const randIndex = Math.floor(Math.random() * pool.length);
+                    passwordArray.push(pool[randIndex]);
+                }
+            } else if (remainingLength < 0) {
+                // Если длина меньше чем количество категорий — просто берем первые length символов (обрезаем)
+                passwordArray = passwordArray.slice(0, length);
+            }
+            
+            // Перемешиваем массив, чтобы обязательные символы не всегда были в начале
+            for (let i = passwordArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+            }
+            
+            let result = passwordArray.join('');
+            // дополнительная проверка: если результат пуст (маловероятно) — ошибка
+            if (result.length === 0) result = 'Ошибка генерации';
+            return result;
+        }
+        
+        // Основная функция генерации и обновления поля
+        function refreshPassword() {
+            const length = parseInt(lengthSlider.value, 10);
+            let pool = getCharacterPool();
+            const activeFlags = {
+                upper: useUpper.checked,
+                lower: useLower.checked,
+                digits: useDigits.checked,
+                symbols: useSymbols.checked
+            };
+            
+            // Проверка, выбран ли хоть один набор
+            if (!activeFlags.upper && !activeFlags.lower && !activeFlags.digits && !activeFlags.symbols) {
+                passwordInput.value = '⚠️ Выберите тип символов!';
+                return;
+            }
+            
+            // Дополнительная проверка: если пул пуст из-за фильтров, но чекбоксы включены — выдадим ошибку
+            if (pool.length === 0) {
+                passwordInput.value = '❗ Нет доступных символов (снимите "исключить похожие" или добавьте наборы)';
+                return;
+            }
+            
+            const newPassword = generatePassword(length, pool, activeFlags);
+            passwordInput.value = newPassword;
+        }
+        
+        // Обработчик изменения ползунка
+        function updateLengthDisplay() {
+            const val = lengthSlider.value;
+            lengthValue.innerText = val;
+            refreshPassword();
+        }
+        
+        // События для всех контролов, меняющих пароль
+        function bindEvents() {
+            lengthSlider.addEventListener('input', updateLengthDisplay);
+            useUpper.addEventListener('change', refreshPassword);
+            useLower.addEventListener('change', refreshPassword);
+            useDigits.addEventListener('change', refreshPassword);
+            useSymbols.addEventListener('change', refreshPassword);
+            excludeAmbiguous.addEventListener('change', refreshPassword);
+            generateBtn.addEventListener('click', refreshPassword);
+        }
+        
+        // Копирование в буфер обмена
+        async function copyToClipboard() {
+            const text = passwordInput.value;
+            if (!text || text.includes('⚠️') || text.includes('❗') || text === '') {
+                showToast('❌ Нечего копировать!');
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('✅ Пароль скопирован!');
+            } catch (err) {
+                // fallback для старых браузеров
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('📋 Скопировано (старый способ)');
+            }
+        }
+        
+        function showToast(message) {
+            toast.textContent = message || 'Скопировано!';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                // восстанавливаем текст по умолчанию после исчезновения
+                setTimeout(() => {
+                    if (toast.textContent !== '✓ Скопировано!') toast.textContent = '✓ Скопировано!';
+                }, 200);
+            }, 1800);
+        }
+        
+        // Инициализация: генерируем первый пароль при загрузке
+        function init() {
+            bindEvents();
+            // Установим дефолтные значения: все чекбоксы уже стоят, слайдер 16, генерируем.
+            refreshPassword();
+            copyBtn.addEventListener('click', copyToClipboard);
+            
+            // Дополнительно: если пользователь отключает все чекбоксы - напомним и поставим хотя бы один?
+            const checkboxes = [useUpper, useLower, useDigits, useSymbols];
+            function validateAtLeastOne() {
+                const anyChecked = checkboxes.some(cb => cb.checked);
+                if (!anyChecked) {
+                    // если ни одного, то ставим "заглушку" и предлагаем включить
+                    passwordInput.value = '🔔 Включите хотя бы один тип символов';
+                } else {
+                    if (passwordInput.value.includes('Включите') || passwordInput.value.includes('Выберите')) {
+                        refreshPassword();
+                    }
+                }
+            }
+            checkboxes.forEach(cb => cb.addEventListener('change', validateAtLeastOne));
+            // доп. контроль при exclude тоже
+            excludeAmbiguous.addEventListener('change', () => {
+                if (useUpper.checked || useLower.checked || useDigits.checked || useSymbols.checked) {
+                    refreshPassword();
+                } else {
+                    passwordInput.value = '🔔 Включите хотя бы один тип символов';
+                }
+            });
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>
